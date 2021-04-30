@@ -1,0 +1,9 @@
+.idea
+coverage.out
+*.DS_Store
+*.validate.go
+vendor
+*.sw[op]
+log/*
+main
+nautilus
