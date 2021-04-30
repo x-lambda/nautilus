@@ -1,4 +1,4 @@
-package timeout
+package middleware
 
 import (
 	"bytes"
@@ -6,8 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 	"sync"
 	"time"
+
+	"nautilus/util/errors"
+	"nautilus/util/trace"
 
 	"github.com/gin-gonic/gin"
 )
@@ -93,7 +97,6 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 
 		// update gin request context
 		c.Request = c.Request.WithContext(ctx)
-		c.Next()
 
 		finished := make(chan struct{})        // to indicate handler finished
 		panicChan := make(chan interface{}, 1) // used to handle panics if we can't recover
@@ -110,15 +113,18 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 		}()
 
 		select {
-		case <-panicChan:
+		case rec := <-panicChan:
 			// if we cannot recover from panic,
 			// send internal server error
-			e := NewInternal()
+			e := errors.NewInternal()
 			tw.ResponseWriter.WriteHeader(e.Status())
+			tw.ResponseWriter.Header().Set("x-trace-id", trace.GetTraceID(c.Request.Context()))
 			eResp, _ := json.Marshal(gin.H{
 				"code": -1,
 				"msg":  e.Error(),
 			})
+			fmt.Println(rec)
+			fmt.Println(string(debug.Stack()))
 			tw.ResponseWriter.Write(eResp)
 		case <-finished:
 			// if finished, set headers and write resp
@@ -137,7 +143,7 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 			// timeout has occurred, send errTimeout and write headers
 			tw.mu.Lock()
 			defer tw.mu.Unlock()
-			et := NewRequestTimeout("timeout")
+			et := errors.NewRequestTimeout("timeout")
 			// ResponseWriter from gin
 			tw.ResponseWriter.Header().Set("Content-Type", "application/json")
 			tw.ResponseWriter.WriteHeader(et.Status())

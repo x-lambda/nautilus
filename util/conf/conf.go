@@ -65,7 +65,7 @@ func init() {
 	}
 
 	v = viper.New()
-	viper.SetConfigName("example")
+	viper.SetConfigName("nautilus")
 	viper.AddConfigPath(path)
 	viper.SetConfigType("toml")
 

@@ -2,6 +2,7 @@ package trace
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -16,7 +17,7 @@ var closer io.Closer
 
 func init() {
 	// TODO 修改配置
-	serviceName := ""
+	serviceName := "app name"
 	param := 0.9
 	agent := "" // host+":"+port
 
@@ -49,11 +50,13 @@ func GetTraceID(ctx context.Context) (traceID string) {
 
 	span := opentracing.SpanFromContext(ctx)
 	if span == nil {
+		fmt.Println("span == nil")
 		return
 	}
 
 	jctx, ok := span.Context().(jaeger.SpanContext)
 	if !ok {
+		fmt.Println("span not jaeger.SpanContext")
 		return
 	}
 

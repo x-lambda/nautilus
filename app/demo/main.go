@@ -11,8 +11,8 @@ import (
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "",
-		Short: "protoc-gen-gin-example",
-		Long:  "protoc-gen-gin example",
+		Short: "demo",
+		Long:  "demo",
 		Run: func(cmd *cobra.Command, args []string) {
 			help.Usage()
 		},

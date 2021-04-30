@@ -10,8 +10,8 @@ var internal bool
 
 var Cmd = &cobra.Command{
 	Use:   "server",
-	Short: "protoc-gen-gin-example server",
-	Long:  "",
+	Short: "server",
+	Long:  "demo server",
 	Run: func(cmd *cobra.Command, args []string) {
 		main()
 	},

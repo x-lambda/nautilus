@@ -21,6 +21,8 @@ service BlogService {
 			post: "/v1/author/{author_id}/articles"
 		};
 	}
+
+
 }
 
 message GetArticlesReq {

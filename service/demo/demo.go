@@ -3,13 +3,11 @@ package demo
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"nautilus/dao/demo"
 )
 
 func TestTimeout(ctx context.Context) (err error) {
-	time.Sleep(1 * time.Second)
 	// fmt.Println("你看不到我😛")
 	item, err := demo.QueryByID(ctx, 11)
 	if err != nil {
