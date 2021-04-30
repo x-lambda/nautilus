@@ -4,7 +4,8 @@ package demo_v0
 
 import (
 	context "context"
-	erros "erros"
+	errors "errors"
+
 	gin "github.com/gin-gonic/gin"
 	metadata "google.golang.org/grpc/metadata"
 )
@@ -12,7 +13,7 @@ import (
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the github.com/x-lambda/protoc-gen-gin package it is being compiled against.
 // context.metadata.
-// gin.erros.
+// gin.errors.
 
 type BlogServiceHTTPServer interface {
 	CreateArticle(context.Context, *Article) (*Article, error)

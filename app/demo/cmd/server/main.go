@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/x-lambda/nautilus/util/conf"
-	"github.com/x-lambda/nautilus/util/middleware/timeout"
+	"nautilus/util/conf"
+	"nautilus/util/middleware/timeout"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +28,7 @@ func main() {
 	for {
 		select {
 		case <-reload:
+			// TODO reset
 			os.Exit(0)
 		case sg := <-stop:
 			fmt.Println("exit ....")

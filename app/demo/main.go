@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/x-lambda/nautilus/app/demo/cmd/help"
-	"github.com/x-lambda/nautilus/app/demo/cmd/job"
-	"github.com/x-lambda/nautilus/app/demo/cmd/server"
+	"nautilus/app/demo/cmd/help"
+	"nautilus/app/demo/cmd/job"
+	"nautilus/app/demo/cmd/server"
 
 	"github.com/spf13/cobra"
 )

@@ -3,9 +3,8 @@ package demov0
 import (
 	"context"
 
-	"github.com/x-lambda/nautilus/service/demo"
-
-	pb "github.com/x-lambda/nautilus/rpc/demo/v0"
+	pb "nautilus/rpc/demo/v0"
+	"nautilus/service/demo"
 )
 
 type DemoServer struct{}

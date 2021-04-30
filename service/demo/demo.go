@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/x-lambda/nautilus/dao/demo"
+	"nautilus/dao/demo"
 )
 
 func TestTimeout(ctx context.Context) (err error) {

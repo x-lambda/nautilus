@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/x-lambda/nautilus/util/db"
+	"nautilus/util/db"
 )
 
 type Item struct {
