@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -45,11 +44,13 @@ func startSpan(req *http.Request) (spanReq *http.Request, span opentracing.Span)
 
 	tracer := opentracing.GlobalTracer()
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
+	// 这里会尝试从 http headers 提取出trace信息
 	if spanCtx, err := tracer.Extract(opentracing.HTTPHeaders, carrier); err == nil {
+		// 能提取出，说明上游有调用方，则在上游的span中续上span[child span]
 		span = opentracing.StartSpan(operation, ext.RPCServerOption(spanCtx))
 		ctx = opentracing.ContextWithSpan(ctx, span)
 	} else {
-		fmt.Println("new request is here")
+		// 相当于创建一个 root span
 		span, ctx = opentracing.StartSpanFromContext(ctx, operation)
 	}
 

@@ -4,16 +4,14 @@ import (
 	"context"
 	"time"
 
-	"nautilus/service/demo"
-
 	pb "nautilus/rpc/demo/v0"
 )
 
 type DemoServer struct{}
 
 func (s *DemoServer) CreateArticle(ctx context.Context, req *pb.Article) (resp *pb.Article, err error) {
-	err = demo.TestTimeout(ctx)
-	time.Sleep(10 * time.Second)
+	// err = demo.TestTimeout(ctx)
+	time.Sleep(2 * time.Millisecond)
 	resp = &pb.Article{
 		Title: "testssss",
 	}
@@ -21,8 +19,8 @@ func (s *DemoServer) CreateArticle(ctx context.Context, req *pb.Article) (resp *
 }
 
 func (s *DemoServer) GetArticles(ctx context.Context, req *pb.GetArticlesReq) (resp *pb.GetArticlesResp, err error) {
-	demo.TestTimeout(ctx)
-	time.Sleep(10 * time.Second)
+	// demo.TestTimeout(ctx)
+	time.Sleep(100 * time.Millisecond)
 	resp = &pb.GetArticlesResp{
 		Total: 10,
 	}

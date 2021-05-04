@@ -35,7 +35,7 @@ func GetTraceID(ctx context.Context) string {
 	return ctx.Value(TraceIDKey).(string)
 }
 
-// WithTraceID 注入 trace id
+// WithTraceID 向ctx中注入 trace id
 func WithTraceID(ctx context.Context, traceID string) context.Context {
 	return context.WithValue(ctx, TraceIDKey, traceID)
 }

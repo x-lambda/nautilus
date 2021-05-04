@@ -112,3 +112,12 @@ func logger() *logrus.Entry {
 		"env":         Env,
 	})
 }
+
+func Get(key string) (value string) {
+	value = v.GetString(key)
+	return
+}
+
+func GetInt32(key string) (value int32) {
+	return
+}

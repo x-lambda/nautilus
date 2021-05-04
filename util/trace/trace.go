@@ -2,65 +2,79 @@ package trace
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 
+	"nautilus/util/conf"
+
 	opentracing "github.com/opentracing/opentracing-go"
 	jaeger "github.com/uber/jaeger-client-go"
-	"github.com/uber/jaeger-client-go/config"
-	"github.com/uber/jaeger-client-go/log"
-	"github.com/uber/jaeger-lib/metrics"
+	"github.com/uber/jaeger-client-go/zipkin"
 )
+
+// refer:
+//	https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941
+//	https://medium.com/opentracing/tracing-http-request-latency-in-go-with-opentracing-7cc1282a100a
+//
+// 开发环境可以一键部署jaeger:
+// docker run -d -p6831:6831/udp -p16686:16686 jaegertracing/all-in-one:latest
+// 然后配置
+// 		JAEGER_TRACE_STATUS = 1
+// 		JAEGER_TRACE_AGENT = "127.0.0.1:6831"
+// 即可
 
 var closer io.Closer
 
 func init() {
-	// TODO 修改配置
-	serviceName := "app name"
+	if conf.GetInt32("JAEGER_TRACE_STATUS") != 1 {
+		return
+	}
+
+	var reporter jaeger.Reporter
+	agent := conf.Get("JAEGER_TRACE_AGENT") // host+":"+port
+	if agent == "" {
+		reporter = jaeger.NewNullReporter()
+	} else {
+		// Jaeger tracer can be initialized with a transport that will
+		// report tracing Spans to a Zipkin backend
+		transport, _ := jaeger.NewUDPTransport(agent, 0)
+		reporter = jaeger.NewRemoteReporter(transport)
+	}
+
+	serviceName := conf.Get("APP_ID")
 	param := 0.9
-	agent := "" // host+":"+port
 
-	cfg := config.Configuration{
-		ServiceName: serviceName,
-		Sampler: &config.SamplerConfig{
-			Type:  jaeger.SamplerTypeProbabilistic,
-			Param: param, // 采样比例
-		},
-		Reporter: &config.ReporterConfig{
-			LocalAgentHostPort: agent,
-		},
-	}
-
-	tracer, c, err := cfg.NewTracer(
-		config.Logger(log.NullLogger),
-		config.Metrics(metrics.NullFactory),
+	sampler, _ := jaeger.NewProbabilisticSampler(param)
+	propagetor := zipkin.NewZipkinB3HTTPHeaderPropagator()
+	tracer, c := jaeger.NewTracer(
+		serviceName,
+		sampler,
+		reporter,
+		jaeger.TracerOptions.Injector(opentracing.HTTPHeaders, propagetor),
+		jaeger.TracerOptions.Extractor(opentracing.HTTPHeaders, propagetor),
+		jaeger.TracerOptions.ZipkinSharedRPCSpan(true),
 	)
-	if err != nil {
-		panic(err)
-	}
 
 	closer = c
 	opentracing.SetGlobalTracer(tracer)
 }
 
-// GetTraceID
+// GetTraceID 从opentracing span中获取trace id
+// https://github.com/opentracing/opentracing-go/issues/188
 func GetTraceID(ctx context.Context) (traceID string) {
 	traceID = "no-trace-id"
 
 	span := opentracing.SpanFromContext(ctx)
 	if span == nil {
-		fmt.Println("span == nil")
 		return
 	}
 
-	jctx, ok := span.Context().(jaeger.SpanContext)
+	sc, ok := span.Context().(jaeger.SpanContext)
 	if !ok {
-		fmt.Println("span not jaeger.SpanContext")
 		return
 	}
 
-	traceID = jctx.TraceID().String()
+	traceID = sc.TraceID().String()
 	return
 }
 
