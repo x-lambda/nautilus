@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"nautilus/util/conf"
+
 	"github.com/dlmiddlecote/sqlstats"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -107,8 +109,7 @@ func Get(ctx context.Context, name string) *DB {
 	}
 
 	v, err, _ := sf.Do(name, func() (interface{}, error) {
-		dsn := "" // TODO conf.Get("DB_" + name + "_DSN")
-
+		dsn := conf.Get("DB_" + name + "_DSN")
 		sqldb, err := sql.Open("mysql", dsn)
 		if err != nil {
 			return nil, err

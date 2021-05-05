@@ -49,7 +49,7 @@ func startServer() {
 	router := gin.New()
 
 	// middleware
-	router.Use(middleware.Timeout(time.Millisecond * 500))
+	router.Use(middleware.Timeout(time.Millisecond * 50000))
 	router.Use(middleware.NewTraceID())
 
 	register(router, internal)

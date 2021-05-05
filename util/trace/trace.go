@@ -13,23 +13,21 @@ import (
 )
 
 // refer:
+//	https://github.com/jaegertracing/jaeger-client-go/blob/master/zipkin/README.md
 //	https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941
 //	https://medium.com/opentracing/tracing-http-request-latency-in-go-with-opentracing-7cc1282a100a
 //
 // 开发环境可以一键部署jaeger:
-// docker run -d -p6831:6831/udp -p16686:16686 jaegertracing/all-in-one:latest
+// 		docker run -d -p6831:6831/udp -p16686:16686 jaegertracing/all-in-one:latest
 // 然后配置
-// 		JAEGER_TRACE_STATUS = 1
 // 		JAEGER_TRACE_AGENT = "127.0.0.1:6831"
 // 即可
+// 注意：trace id依赖opentracing.SetGlobalTracer()，所以无论如何都会开启opentracing，区别在于
+//		会不会真的上报，如果opentracing对应用的性能造成影响，需要优化这里
 
 var closer io.Closer
 
 func init() {
-	if conf.GetInt32("JAEGER_TRACE_STATUS") != 1 {
-		return
-	}
-
 	var reporter jaeger.Reporter
 	agent := conf.Get("JAEGER_TRACE_AGENT") // host+":"+port
 	if agent == "" {
@@ -45,6 +43,7 @@ func init() {
 	param := 0.9
 
 	sampler, _ := jaeger.NewProbabilisticSampler(param)
+	// 支持 zipkin B3 http header
 	propagetor := zipkin.NewZipkinB3HTTPHeaderPropagator()
 	tracer, c := jaeger.NewTracer(
 		serviceName,

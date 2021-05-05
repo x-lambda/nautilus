@@ -42,20 +42,24 @@ func WithTraceID(ctx context.Context, traceID string) context.Context {
 
 // GetAccessIP 获取请求 ip
 func GetAccessIP(ctx context.Context) string {
-	return ctx.Value(AccessIPKey).(string)
+	v, _ := ctx.Value(AccessIPKey).(string)
+	return v
 }
 
 // GetPlatform 获取平台信息
 func GetPlatform(ctx context.Context) string {
-	return ctx.Value(PlatformKey).(string)
+	v, _ := ctx.Value(PlatformKey).(string)
+	return v
 }
 
 // GetAppkey 获取 app key
 func GetAppkey(ctx context.Context) string {
-	return ctx.Value(AppkeyKey).(string)
+	v, _ := ctx.Value(AppkeyKey).(string)
+	return v
 }
 
 // GetDevice 获取浏览器型号
 func GetDevice(ctx context.Context) string {
-	return ctx.Value(DeviceKey).(string)
+	v, _ := ctx.Value(DeviceKey).(string)
+	return v
 }
