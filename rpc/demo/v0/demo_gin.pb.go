@@ -5,14 +5,12 @@ package demo_v0
 import (
 	context "context"
 	errors "errors"
-
 	gin "github.com/gin-gonic/gin"
-	metadata "google.golang.org/grpc/metadata"
 )
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the github.com/x-lambda/protoc-gen-gin package it is being compiled against.
-// context.metadata.
+// context.
 // gin.errors.
 
 type BlogServiceHTTPServer interface {
@@ -105,11 +103,15 @@ func (s *BlogService) GetArticles_0(ctx *gin.Context) {
 		return
 	}
 
-	md := metadata.New(nil)
-	for k, v := range ctx.Request.Header {
-		md.Set(k, v...)
-	}
-	newCtx := metadata.NewIncomingContext(ctx, md)
+	// TODO use metadata.NewIncomingContext
+	// support GRPC/HTTP
+	// timeout check with newCtx.Done()
+	// md := metadata.New(nil)
+	// for k, v := range ctx.Request.Header {
+	// md.Set(k, v...)
+	// }
+	// newCtx := metadata.NewIncomingContext(ctx, md)
+	newCtx := ctx.Request.Context()
 	out, err := s.server.(BlogServiceHTTPServer).GetArticles(newCtx, &in)
 	if err != nil {
 		s.resp.Error(ctx, err)
@@ -127,11 +129,15 @@ func (s *BlogService) GetArticles_1(ctx *gin.Context) {
 		return
 	}
 
-	md := metadata.New(nil)
-	for k, v := range ctx.Request.Header {
-		md.Set(k, v...)
-	}
-	newCtx := metadata.NewIncomingContext(ctx, md)
+	// TODO use metadata.NewIncomingContext
+	// support GRPC/HTTP
+	// timeout check with newCtx.Done()
+	// md := metadata.New(nil)
+	// for k, v := range ctx.Request.Header {
+	// md.Set(k, v...)
+	// }
+	// newCtx := metadata.NewIncomingContext(ctx, md)
+	newCtx := ctx.Request.Context()
 	out, err := s.server.(BlogServiceHTTPServer).GetArticles(newCtx, &in)
 	if err != nil {
 		s.resp.Error(ctx, err)
@@ -154,11 +160,15 @@ func (s *BlogService) CreateArticle_0(ctx *gin.Context) {
 		return
 	}
 
-	md := metadata.New(nil)
-	for k, v := range ctx.Request.Header {
-		md.Set(k, v...)
-	}
-	newCtx := metadata.NewIncomingContext(ctx, md)
+	// TODO use metadata.NewIncomingContext
+	// support GRPC/HTTP
+	// timeout check with newCtx.Done()
+	// md := metadata.New(nil)
+	// for k, v := range ctx.Request.Header {
+	// md.Set(k, v...)
+	// }
+	// newCtx := metadata.NewIncomingContext(ctx, md)
+	newCtx := ctx.Request.Context()
 	out, err := s.server.(BlogServiceHTTPServer).CreateArticle(newCtx, &in)
 	if err != nil {
 		s.resp.Error(ctx, err)

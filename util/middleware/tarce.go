@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
-	"time"
 
 	"nautilus/util/ctxkit"
 	"nautilus/util/trace"
@@ -28,11 +26,9 @@ func NewTraceID() gin.HandlerFunc {
 // newRequestID 每个请求创建一个trace id
 func newRequestID(req *http.Request, resp http.ResponseWriter) *http.Request {
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, ctxkit.StartTimeKey, time.Now())
-
 	traceID := trace.GetTraceID(ctx)
-	resp.Header().Set("x-trace-id", traceID)
 	ctx = ctxkit.WithTraceID(ctx, traceID)
+	resp.Header().Set("x-trace-id", traceID)
 
 	return req.WithContext(ctx)
 }
@@ -47,14 +43,13 @@ func startSpan(req *http.Request) (spanReq *http.Request, span opentracing.Span)
 	// 这里会尝试从 http headers 提取出trace信息
 	if spanCtx, err := tracer.Extract(opentracing.HTTPHeaders, carrier); err == nil {
 		// 能提取出，说明上游有调用方，则在上游的span中续上span[child span]
-		span = opentracing.StartSpan(operation, ext.RPCServerOption(spanCtx))
+		span = opentracing.StartSpan(operation, opentracing.ChildOf(spanCtx))
 		ctx = opentracing.ContextWithSpan(ctx, span)
 	} else {
 		// 相当于创建一个 root span
 		span, ctx = opentracing.StartSpanFromContext(ctx, operation)
 	}
 
-	ext.SpanKindRPCServer.Set(span)
 	span.SetTag(string(ext.HTTPUrl), req.URL.Path)
 
 	spanReq = req.WithContext(ctx)

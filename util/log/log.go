@@ -16,6 +16,8 @@ var logger *logrus.Logger
 // Logger logrus logger封装
 type Logger = *logrus.Entry
 
+type Fields = logrus.Fields
+
 // levels 日志等级
 var levels = map[string]logrus.Level{
 	"panic": logrus.PanicLevel,

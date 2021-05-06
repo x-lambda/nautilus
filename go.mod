@@ -13,8 +13,9 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	github.com/uber/jaeger-client-go v2.27.0+incompatible
-	github.com/uber/jaeger-lib v2.4.1+incompatible
+	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/genproto v0.0.0-20210429181445-86c259c2b4ab
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0

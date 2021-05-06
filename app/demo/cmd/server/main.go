@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"nautilus/util/conf"
+	"nautilus/util/log"
 	"nautilus/util/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,7 @@ func main() {
 			select {
 			case <-reload:
 				// TODO reset
+				log.Reset()
 				os.Exit(0)
 			case sg := <-stop:
 				fmt.Println("exit ....")
@@ -39,16 +41,15 @@ func main() {
 		}
 	}()
 
-	fmt.Println("start server")
 	startServer()
 }
 
 func startServer() {
-	// TODO ctx 处理
-	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
 	// middleware
+	router.Use(middleware.Logging())
 	router.Use(middleware.Timeout(time.Millisecond * 50000))
 	router.Use(middleware.NewTraceID())
 

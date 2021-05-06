@@ -1,6 +1,8 @@
 package ctxkit
 
-import "context"
+import (
+	"context"
+)
 
 // key context中的key建议使用int类型
 // https://github.com/golang/go/issues/17826
@@ -20,19 +22,20 @@ const (
 	VersionKey
 	// AccessKeyKey 登录token
 	AccessKeyKey
-	// AppkeyKey
+	// AppkeyKey app key
 	AppkeyKey
 	// DeviceKey 浏览器型号
 	DeviceKey
 	// TSKey 时间戳
 	TSKey
-	// 签名
+	// SignKey 签名
 	SignKey
 )
 
 // GetTraceID 获取 trace id
-func GetTraceID(ctx context.Context) string {
-	return ctx.Value(TraceIDKey).(string)
+func GetTraceID(ctx context.Context) (traceID string) {
+	traceID, _ = ctx.Value(TraceIDKey).(string)
+	return
 }
 
 // WithTraceID 向ctx中注入 trace id
