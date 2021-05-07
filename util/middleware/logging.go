@@ -2,12 +2,15 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"nautilus/util/ctxkit"
 	"nautilus/util/log"
+	"nautilus/util/metrics"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func Logging() gin.HandlerFunc {
@@ -19,13 +22,22 @@ func Logging() gin.HandlerFunc {
 			start := ctx.Value(ctxkit.StartTimeKey).(time.Time)
 			duration := time.Since(start)
 			path := c.Request.URL.Path
+			status := c.Writer.Status()
 
 			// TODO params
 			log.Get(ctx).WithFields(log.Fields{
 				"path":   path,
-				"status": c.Writer.Status(),
+				"status": status,
 				"cost":   duration.Seconds(),
 			}).Info("new rpc")
+
+			// 爬虫随便访问的url有可能导致prometheus报错
+			if status != 404 {
+				metrics.RPCDurationSeconds.With(prometheus.Labels{
+					"path": path,
+					"code": fmt.Sprint(c.Writer.Status()),
+				}).Observe(duration.Seconds())
+			}
 		}()
 
 		c.Next()

@@ -35,8 +35,6 @@ func (s *DemoServer) GetArticles(ctx context.Context, req *pb.GetArticlesReq) (r
 		get.Info("this is q request")
 	}
 
-	panic("err")
-
 	resp = &pb.GetArticlesResp{
 		Total: 10,
 	}

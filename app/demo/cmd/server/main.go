@@ -12,6 +12,7 @@ import (
 	"nautilus/util/middleware"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -48,13 +49,16 @@ func startServer() {
 	// gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
+	// metrics
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
 	// middleware
 	router.Use(middleware.Logging())
 	router.Use(middleware.Timeout(time.Millisecond * 50000))
 	router.Use(middleware.NewTraceID())
 
 	register(router, internal)
-	router.Run("127.0.0.1:8080")
+	router.Run(":8080")
 }
 
 func stopServer() {}

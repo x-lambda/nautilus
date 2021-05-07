@@ -100,6 +100,7 @@ func (s *Server) CreateArticle(ctx context.Context, req *pb.CreateArticleReq) (r
 * conf       配置
 * db         数据库
 * log        日志
+* metrics    prometheus
 * middleware 中间件
 * trace      opentracing
 

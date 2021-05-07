@@ -4,12 +4,12 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 	"sync"
 	"time"
 
 	"nautilus/util/conf"
+	"nautilus/util/metrics"
 
 	"github.com/dlmiddlecote/sqlstats"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -180,12 +180,11 @@ func execContext(ctx context.Context, name string, db unionDB, query Query, args
 
 	//log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
 
-	//metrics.DBDurationsSeconds.WithLabelValues(
-	//	name,
-	//	query.trimTableNum(),
-	//	query.sqlType,
-	//).Observe(cost)
-	fmt.Println(cost)
+	metrics.DBDurationSeconds.WithLabelValues(
+		name,
+		query.trimTableNum(),
+		query.sqlType,
+	).Observe(cost)
 
 	return r, err //errors.Wrap(err)
 }
@@ -211,12 +210,11 @@ func queryContext(ctx context.Context, name string, db unionDB, query Query, arg
 
 	// log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
 
-	//metrics.DBDurationsSeconds.WithLabelValues(
-	//	name,
-	//	query.trimTableNum(),
-	//	query.sqlType,
-	//).Observe(cost)
-	fmt.Println(cost)
+	metrics.DBDurationSeconds.WithLabelValues(
+		name,
+		query.trimTableNum(),
+		query.sqlType,
+	).Observe(cost)
 
 	return r, err // errors.Wrap(err)
 }
@@ -242,13 +240,11 @@ func queryRowContext(ctx context.Context, name string, db unionDB, query Query, 
 
 	// log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
 
-	//metrics.DBDurationsSeconds.WithLabelValues(
-	//	name,
-	//	query.trimTableNum(),
-	//	query.sqlType,
-	//).Observe(cost)
-	fmt.Println(cost)
-
+	metrics.DBDurationSeconds.WithLabelValues(
+		name,
+		query.trimTableNum(),
+		query.sqlType,
+	).Observe(cost)
 	return r
 }
 
@@ -279,13 +275,11 @@ func (tx *Tx) log(ctx context.Context, msg string) {
 		// log.Get(ctx).Warnf("rollback, total cost:%s", duration)
 	}
 
-	//metrics.DBDurationsSeconds.WithLabelValues(
-	//	tx.db,
-	//	"_tx",
-	//	msg,
-	//).Observe(duration.Seconds())
-	fmt.Println(duration.Seconds())
-
+	metrics.DBDurationSeconds.WithLabelValues(
+		tx.db,
+		"_tx",
+		msg,
+	).Observe(duration.Seconds())
 }
 
 // ExecContext 执行写查询
