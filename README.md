@@ -45,19 +45,63 @@ app/
 ```
 
 ### `dao`
-数据库支持
+数据库支持，支持metrics/tracing，未使用`ORM`
+```go
+func QueryByID(ctx context.Context, id int32) (item Item, err error) {
+	conn := db.Get(ctx, "default")  // 对应配置中的DSN，可以支持多DB
+	sql := "select id, name, create_time, modify_time from t_demo where id = ?"
+	q := db.SQLSelect("t_demo", sql)
+	err = conn.QueryRowContext(ctx, q, id).Scan(&item.ID, &item.Name, &item.CreateTime, &item.ModifyTime)
+	return
+}
+```
 
 ### `rpc`
 服务定义
+```proto
+service BlogService {
+	rpc CreateArticle(CreateArticleReq) returns (CreateArticleResp) {
+		option (google.api.http) = {
+			post: "/v1/author/{author_id}/articles"
+		};
+	}
+}
+
+message CreateArticleResp {
+    int32 code = 1;
+    string msg = 2;
+}
+
+message CreateArticleReq {
+	string title  = 1;
+	string content = 2;
+	// @inject_tag: form:"author_id" uri:"author_id"
+	int32 author_id = 3;
+}
+
+```
 
 ### `server`
 接口实现层
+```go
+type Server struct {}
+
+func (s *Server) CreateArticle(ctx context.Context, req *pb.CreateArticleReq) (resp *pb.CreateArticleResp, err error) {
+	// TODO 调用service层代码
+}
+```
 
 ### `service`
 逻辑处理层
 
 ### `util`
 工具包
+
+* conf       配置
+* db         数据库
+* log        日志
+* middleware 中间件
+* trace      opentracing
 
 ## 开发流程
 1. 定义接口服务
