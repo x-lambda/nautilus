@@ -2,6 +2,8 @@ package conf
 
 import (
 	"os"
+	"strings"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
@@ -65,15 +67,15 @@ func init() {
 	}
 
 	v = viper.New()
-	viper.SetConfigName("nautilus")
-	viper.AddConfigPath(path)
-	viper.SetConfigType("toml")
+	v.SetConfigName("nautilus")
+	v.AddConfigPath(path)
+	v.SetConfigType("toml")
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := v.ReadInConfig(); err != nil {
 		panic(err)
 	}
 
-	viper.AutomaticEnv()
+	v.AutomaticEnv()
 }
 
 // OnConfigChange 注册文件变更回调，需要在WatchConfig()之前调用
@@ -113,11 +115,41 @@ func logger() *logrus.Entry {
 	})
 }
 
+// Get 获取配置
 func Get(key string) (value string) {
 	value = v.GetString(key)
 	return
 }
 
-func GetInt32(key string) (value int32) {
+// GetStrings 以,分割字符串
+// a,b,c,d   ===>  ["a", "b", "c", "d"]
+func GetStrings(key string) (s []string) {
+	value := Get(key)
+	if value == "" {
+		return
+	}
+
+	for _, v := range strings.Split(value, ",") {
+		s = append(s, v)
+	}
+
 	return
+}
+
+// GetInt32 获取 int32 配置
+func GetInt32(key string) (value int32) {
+	return v.GetInt32(key)
+}
+
+// GetInt64 获取 int64 配置
+func GetInt64(key string) (value int64) {
+	return v.GetInt64(key)
+}
+
+func GetDuration(key string) time.Duration {
+	return v.GetDuration(key)
+}
+
+func GetBool(key string) bool {
+	return v.GetBool(key)
 }
