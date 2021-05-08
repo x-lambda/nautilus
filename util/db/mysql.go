@@ -9,11 +9,14 @@ import (
 	"time"
 
 	"nautilus/util/conf"
+	"nautilus/util/log"
 	"nautilus/util/metrics"
 
 	"github.com/dlmiddlecote/sqlstats"
+	"github.com/go-sql-driver/mysql"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/singleflight"
 )
@@ -174,11 +177,10 @@ func execContext(ctx context.Context, name string, db unionDB, query Query, args
 
 	start := time.Now()
 	r, err := db.ExecContext(ctx, query.sql, args...)
+
 	duration := time.Since(start)
-
 	cost := duration.Seconds()
-
-	//log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
+	log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
 
 	metrics.DBDurationSeconds.WithLabelValues(
 		name,
@@ -204,11 +206,10 @@ func queryContext(ctx context.Context, name string, db unionDB, query Query, arg
 
 	start := time.Now()
 	r, err := db.QueryContext(ctx, query.sql, args...)
+
 	duration := time.Since(start)
-
 	cost := duration.Seconds()
-
-	// log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
+	log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
 
 	metrics.DBDurationSeconds.WithLabelValues(
 		name,
@@ -234,11 +235,10 @@ func queryRowContext(ctx context.Context, name string, db unionDB, query Query, 
 
 	start := time.Now()
 	r := db.QueryRowContext(ctx, query.sql, args...)
+
 	duration := time.Since(start)
-
 	cost := duration.Seconds()
-
-	// log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
+	log.Get(ctx).WithField("cost", cost).Debugf("[DB] name:%s sql:%s args:%v", name, query.sql, args)
 
 	metrics.DBDurationSeconds.WithLabelValues(
 		name,
@@ -270,9 +270,9 @@ func (tx *Tx) log(ctx context.Context, msg string) {
 	duration := time.Since(tx.start)
 
 	if msg == "commit" {
-		// log.Get(ctx).Debugf("commit, total cost:%s", duration)
+		log.Get(ctx).Debugf("commit, total cost:%s", duration)
 	} else {
-		// log.Get(ctx).Warnf("rollback, total cost:%s", duration)
+		log.Get(ctx).Warnf("rollback, total cost:%s", duration)
 	}
 
 	metrics.DBDurationSeconds.WithLabelValues(
@@ -331,12 +331,10 @@ func (db *DB) ExecTx(ctx context.Context, f TxFunc) error {
 		return err // errors.Wrap(err)
 	}
 
-	//logger := log.Get(ctx)
-	//
-	//logger.Info("BeginTx")
+	logger := log.Get(ctx)
+	logger.Info("BeginTx")
 
 	mytx := newTx(ctx, tx, db.name)
-
 	defer func() {
 		if p := recover(); p != nil {
 			mytx.rollback(ctx)
@@ -346,7 +344,7 @@ func (db *DB) ExecTx(ctx context.Context, f TxFunc) error {
 
 	if err := f(ctx, mytx); err != nil {
 		if err := mytx.rollback(ctx); err != nil {
-			// logger.Error("rollback failed", err)
+			logger.Error("rollback failed", err)
 		}
 		return err
 	}
@@ -360,7 +358,7 @@ func IsNoRowsErr(err error) bool {
 		return false
 	}
 
-	return false // errors.Cause(err) == sql.ErrNoRows
+	return err == sql.ErrNoRows
 }
 
 // IsDuplicateEntryErr 判断是否为唯一键冲突错误
@@ -370,9 +368,9 @@ func IsDuplicateEntryErr(err error) bool {
 	}
 
 	// https://stackoverflow.com/a/41666013
-	//if me, ok := errors.Cause(err).(*mysql.MySQLError); ok {
-	//	return me.Number == 1062
-	//}
+	if me, ok := errors.Cause(err).(*mysql.MySQLError); ok {
+		return me.Number == 1062
+	}
 
 	return false
 }

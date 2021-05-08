@@ -35,7 +35,6 @@ func init() {
 
 	// TODO 如果有设置log-agent修改logrus.SetOutput()
 	if conf.Get("LOG_AGENT") != "" {
-
 	}
 }
 

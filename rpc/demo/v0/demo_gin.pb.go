@@ -5,6 +5,7 @@ package demo_v0
 import (
 	context "context"
 	errors "errors"
+
 	gin "github.com/gin-gonic/gin"
 )
 
@@ -53,7 +54,7 @@ func (resp defaultBlogServiceResp) response(ctx *gin.Context, status, code int, 
 func (resp defaultBlogServiceResp) Error(ctx *gin.Context, err error) {
 	code := -1
 	status := 500
-	msg := "未知错误"
+	msg := err.Error()
 
 	if err == nil {
 		msg += ", err is nil"
@@ -87,7 +88,7 @@ func (resp defaultBlogServiceResp) ParamsError(ctx *gin.Context, err error) {
 
 // Success 返回成功信息
 func (resp defaultBlogServiceResp) Success(ctx *gin.Context, data interface{}) {
-	resp.response(ctx, 200, 0, "成功", data)
+	resp.response(ctx, 200, 0, "success", data)
 }
 
 func (s *BlogService) GetArticles_0(ctx *gin.Context) {
