@@ -32,11 +32,17 @@ func Logging() gin.HandlerFunc {
 			}).Info("new rpc")
 
 			// 爬虫随便访问的url有可能导致prometheus报错
+			// prometheus统计的url中不能带数字
 			if status != 404 {
 				metrics.RPCDurationSeconds.With(prometheus.Labels{
 					"path": path,
 					"code": fmt.Sprint(c.Writer.Status()),
 				}).Observe(duration.Seconds())
+
+				metrics.RPCQPSCount.With(prometheus.Labels{
+					"path": path,
+					"code": fmt.Sprint(c.Writer.Status()),
+				}).Inc()
 			}
 		}()
 

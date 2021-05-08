@@ -15,8 +15,13 @@ import (
 // 数据采集
 //		pull:
 //		push:
+// refer:
+//		https://povilasv.me/prometheus-tracking-request-duration/#
 
 var (
+	// RPCQPSCount RPC QPS 统计
+	RPCQPSCount *prometheus.CounterVec
+
 	// RPCDurationSeconds RPC 请求耗时
 	RPCDurationSeconds *prometheus.HistogramVec
 
@@ -52,17 +57,29 @@ var (
 
 	// DBMaxLifetimeClosed 因为 SetMaxLifetimeClosed 而被关闭的连接总数
 	DBMaxLifetimeClosed *prometheus.CounterVec
+
+	// TODO goroutine num / GC
 )
 
+// var buckets = prometheus.DefBuckets
 var buckets = []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1}
 
 func init() {
+	// sum(rate(nautilus_rpc_qps_count [1m])) by (path)
+	RPCQPSCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace:   "nautilus",
+		Name:        "rpc_qps_count",
+		Help:        "RPC QPS count",
+		ConstLabels: map[string]string{"app": conf.AppID, "env": conf.Env},
+	}, []string{"path", "code"})
+	prometheus.MustRegister(RPCQPSCount)
+
 	RPCDurationSeconds = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace:   "nautilus",
 		Name:        "rpc_duration_seconds",
 		Help:        "RPC latency distributions",
 		Buckets:     buckets,
-		ConstLabels: map[string]string{"app": conf.AppID},
+		ConstLabels: map[string]string{"app": conf.AppID, "env": conf.Env},
 	}, []string{"path", "code"})
 	prometheus.MustRegister(RPCDurationSeconds)
 

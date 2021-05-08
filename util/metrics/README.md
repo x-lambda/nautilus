@@ -18,6 +18,7 @@ vi /etc/prometheus/prometheus.yml
 4. 添加`target`
 
 ![修改配置](https://github.com/x-lambda/note/blob/master/golang/imgs/prometheus_yaml.png)
+
 注意: target中填当前服务的ip
 
 5. 重启`prometheus`
