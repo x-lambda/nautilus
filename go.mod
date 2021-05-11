@@ -18,5 +18,6 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/genproto v0.0.0-20210429181445-86c259c2b4ab
+	google.golang.org/grpc v1.36.1
 	google.golang.org/protobuf v1.26.0
 )
