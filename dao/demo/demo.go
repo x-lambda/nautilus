@@ -4,23 +4,20 @@ import (
 	"context"
 	"time"
 
-	"nautilus/util/db"
+	"nautilus/pkg/sqlx"
 )
 
 type Item struct {
-	ID         int32
-	Name       string
-	CreateTime time.Time
-	ModifyTime time.Time
+	ID         int32     `db:"id"`
+	Name       string    `db:"name"`
+	CreateTime time.Time `db:"create_time"`
+	ModifyTime time.Time `db:"modify_time"`
 }
 
 func QueryByID(ctx context.Context, id int32) (item Item, err error) {
-	conn := db.Get(ctx, "default")
-	sql := "select id, name, create_time, modify_time from t_demo where id = ?"
-	q := db.SQLSelect("t_demo", sql)
-	err = conn.QueryRowContext(ctx, q, id).Scan(&item.ID, &item.Name, &item.CreateTime, &item.ModifyTime)
-	if db.IsNoRowsErr(err) {
-		err = nil
-	}
+	conn := sqlx.Get(ctx, "default")
+	sql := "select * from t_demo where id = ?"
+
+	err = conn.GetContext(ctx, &item, sql, id)
 	return
 }

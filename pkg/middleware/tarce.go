@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"nautilus/util/ctxkit"
-	"nautilus/util/trace"
+	"nautilus/pkg/ctxkit"
+	"nautilus/pkg/trace"
 
 	"github.com/gin-gonic/gin"
 	opentracing "github.com/opentracing/opentracing-go"

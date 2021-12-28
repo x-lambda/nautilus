@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"nautilus/util/errors"
-	"nautilus/util/trace"
+	"nautilus/pkg/errors"
+	"nautilus/pkg/trace"
 
 	"github.com/gin-gonic/gin"
 )

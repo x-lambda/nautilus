@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"nautilus/util/ctxkit"
-	"nautilus/util/log"
-	"nautilus/util/metrics"
+	"nautilus/pkg/ctxkit"
+	"nautilus/pkg/log"
+	"nautilus/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"

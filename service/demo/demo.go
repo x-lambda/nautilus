@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"nautilus/dao/demo"
-	"nautilus/util/log"
+	"nautilus/pkg/log"
 )
 
 func TestTimeout(ctx context.Context) (err error) {

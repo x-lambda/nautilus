@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"nautilus/util/conf"
+	"nautilus/pkg/conf"
 
 	"github.com/prometheus/client_golang/prometheus"
 )

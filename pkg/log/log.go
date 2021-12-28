@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"nautilus/util/conf"
-	"nautilus/util/ctxkit"
+	"nautilus/pkg/conf"
+	"nautilus/pkg/ctxkit"
 
 	"github.com/sirupsen/logrus"
 )

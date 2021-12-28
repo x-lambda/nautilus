@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"nautilus/util/conf"
-	"nautilus/util/log"
-	"nautilus/util/metrics"
+	"nautilus/pkg/conf"
+	"nautilus/pkg/log"
+	"nautilus/pkg/metrics"
 
 	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-sql-driver/mysql"
