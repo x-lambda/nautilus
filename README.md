@@ -54,7 +54,7 @@ ctx := context.TODO()
 var u User
 err = conn.GetContext(ctx, &u, "select * from users where id = ?", id)
 if err != nil {
-return
+    return
 }
 ```
 参考[README](./pkg/sqlx/README.md)
@@ -63,11 +63,11 @@ return
 服务定义
 ```proto
 service BlogService {
-	rpc CreateArticle(CreateArticleReq) returns (CreateArticleResp) {
-		option (google.api.http) = {
-			post: "/v1/author/{author_id}/articles"
-		};
-	}
+    rpc CreateArticle(CreateArticleReq) returns (CreateArticleResp) {
+        option (google.api.http) = {
+            post: "/v1/author/{author_id}/articles"
+        };
+    }
 }
 
 message CreateArticleResp {
@@ -76,15 +76,15 @@ message CreateArticleResp {
 }
 
 message CreateArticleReq {
-	string title  = 1;
-	string content = 2;
-	// @inject_tag: form:"author_id" uri:"author_id"
-	int32 author_id = 3;
+    string title  = 1;
+    string content = 2;
+    // @inject_tag: form:"author_id" uri:"author_id"
+    int32 author_id = 3;
 }
 
 ```
 
-### `rpc`
+### `ctrl`
 接口实现层
 ```go
 type Server struct {}
@@ -93,8 +93,9 @@ func (s *Server) CreateArticle(ctx context.Context, req *pb.CreateArticleReq) (r
 	// TODO 调用service层代码
 }
 ```
+对应的是`server/controller`层
 
-### `service`
+### `svc`
 逻辑处理层
 ```go
 // 1. 调用dao层代码，例如查询blog数据
@@ -118,31 +119,28 @@ func Foo(ctx context.Context, req pb.Req) (result interface{}, err error) {
 ### `pkg`
 工具包
 
-* conf       配置
-* db         数据库
-* log        日志
-* metrics    prometheus
-* middleware 中间件
-* trace      opentracing
+* `conf`        配置
+* `sqlx`        数据库
+* `log`         日志
+* `metrics`     `prometheus`
+* `middleware`  中间件
+* `trace`       `opentracing`
 
 ## 开发流程
 1. 定义接口服务
    在`api/`下定义接口，建议格式`api/demo/v${num}/${xx}.proto`，参考[pb描述文件](./rpc/demo/v0/demo.proto)
-   然后执行命令
+   然后执行命令，会自动生成`req`和`resp`代码
    ```shell
    $ make rpc
    ```
    
 2. 实现接口
-    在`rpc/`下实现定义的接口，建议格式`rpc/demov0/server.go`，参考[server](./server/demov0/server.go)
+    在`ctrl/`下实现定义的接口，建议格式`ctrl/demov0/server.go`，参考[server](./server/demov0/server.go)
     
-    server一般是参数校验，和归类响应数据等
-    
-    service层是逻辑处理层
-   
-    dao层是数据库访问层
-    
-    调用顺序 `rpc---->svc----->dao`
+    `ctrl`一般是参数校验，和归类响应数据等，调用顺序 
+   ```
+   ctrl---->svc----->dao
+   ```
    
 
 3. 注册接口
