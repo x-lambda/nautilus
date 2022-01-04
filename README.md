@@ -45,18 +45,21 @@ app/
 ```
 
 ### `dao`
-数据库支持，支持metrics/tracing，未使用`ORM`
+数据库支持，支持metrics/tracing 
 ```go
-func QueryByID(ctx context.Context, id int32) (item Item, err error) {
-	conn := db.Get(ctx, "default")  // 对应配置中的DSN，可以支持多DB
-	sql := "select id, name, create_time, modify_time from t_demo where id = ?"
-	q := db.SQLSelect("t_demo", sql)
-	err = conn.QueryRowContext(ctx, q, id).Scan(&item.ID, &item.Name, &item.CreateTime, &item.ModifyTime)
-	return
+// 选择某个数据库，可以支持多实例
+conn := sqlx.Get(ctx, "db1")
+ctx := context.TODO()
+
+var u User
+err = conn.GetContext(ctx, &u, "select * from users where id = ?", id)
+if err != nil {
+return
 }
 ```
+参考[README](./pkg/sqlx/README.md)
 
-### `rpc`
+### `api`
 服务定义
 ```proto
 service BlogService {
@@ -81,7 +84,7 @@ message CreateArticleReq {
 
 ```
 
-### `server`
+### `rpc`
 接口实现层
 ```go
 type Server struct {}
@@ -93,8 +96,26 @@ func (s *Server) CreateArticle(ctx context.Context, req *pb.CreateArticleReq) (r
 
 ### `service`
 逻辑处理层
+```go
+// 1. 调用dao层代码，例如查询blog数据
+func Foo(ctx context.Context, req pb.Req) (result interface{}, err error) {
+    b, err := blog.QueryByID(ctx, req.ID)
+    if err != nil {
+    	return
+    }   
+    
+    total, err := blog.CountOnline(ctx)
+    if err != nil {
+        return
+    }
+    
+    // 聚合结果返回
+    return
+}
 
-### `util`
+```
+
+### `pkg`
 工具包
 
 * conf       配置
@@ -106,14 +127,14 @@ func (s *Server) CreateArticle(ctx context.Context, req *pb.CreateArticleReq) (r
 
 ## 开发流程
 1. 定义接口服务
-   在`rpc/`下定义接口，建议格式`rpc/demo/v${num}/${xx}.proto`，参考[pb描述文件](./rpc/demo/v0/demo.proto)
+   在`api/`下定义接口，建议格式`api/demo/v${num}/${xx}.proto`，参考[pb描述文件](./rpc/demo/v0/demo.proto)
    然后执行命令
    ```shell
    $ make rpc
    ```
    
 2. 实现接口
-    在`server/`下实现定义的接口，建议格式`server/demov0/server.go`，参考[server](./server/demov0/server.go)
+    在`rpc/`下实现定义的接口，建议格式`rpc/demov0/server.go`，参考[server](./server/demov0/server.go)
     
     server一般是参数校验，和归类响应数据等
     
@@ -121,7 +142,7 @@ func (s *Server) CreateArticle(ctx context.Context, req *pb.CreateArticleReq) (r
    
     dao层是数据库访问层
     
-    调用顺序 `server---->service----->dao`
+    调用顺序 `rpc---->svc----->dao`
    
 
 3. 注册接口
