@@ -7,9 +7,9 @@ import (
 	"syscall"
 	"time"
 
-	"nautilus/util/conf"
-	"nautilus/util/log"
-	"nautilus/util/middleware"
+	"nautilus/pkg/conf"
+	"nautilus/pkg/log"
+	"nautilus/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

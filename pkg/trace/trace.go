@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"nautilus/util/conf"
+	"nautilus/pkg/conf"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	jaeger "github.com/uber/jaeger-client-go"

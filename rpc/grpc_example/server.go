@@ -3,10 +3,10 @@ package grpc_example
 import (
 	"context"
 
-	"nautilus/service/demo"
-	"nautilus/util/log"
+	"nautilus/pkg/log"
+	"nautilus/svc/demo"
 
-	pb "nautilus/rpc/grpc/v0"
+	pb "nautilus/api/grpc/v0"
 )
 
 type Server struct {

@@ -3,10 +3,10 @@ package demov0
 import (
 	"context"
 
-	"nautilus/service/demo"
-	"nautilus/util/log"
+	"nautilus/pkg/log"
+	"nautilus/svc/demo"
 
-	pb "nautilus/rpc/demo/v0"
+	pb "nautilus/api/demo/v0"
 )
 
 type DemoServer struct{}
