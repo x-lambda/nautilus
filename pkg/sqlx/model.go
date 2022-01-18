@@ -151,3 +151,8 @@ func deletex(ctx context.Context, db mapExecer, m Modeler) (result sql.Result, e
 	query = db.Rebind(query)
 	return db.ExecContext(ctx, query, id)
 }
+
+// IsNoRowErr 判断是否no row
+func IsNoRowErr(err error) bool {
+	return sql.ErrNoRows == err
+}
