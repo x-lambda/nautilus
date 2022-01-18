@@ -153,3 +153,7 @@ func GetDuration(key string) time.Duration {
 func GetBool(key string) bool {
 	return v.GetBool(key)
 }
+
+func GetFloat64(key string) float64 {
+	return v.GetFloat64(key)
+}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+// 格式: ${dir};package_name
+option go_package = "pension/v0;pension_v0";
+
+import "google/api/annotations.proto";
+
+
+service AdminService {
+  // 登录接口
+  rpc Login(LoginReq) returns (LoginResp) { option (google.api.http) = { post: "/api/v0/admin/login" }; }
+  // 登出接口
+  rpc Logout(EmptyReq) returns (EmptyResp) { option (google.api.http) = { post: "/api/v0/admin/logout" }; };
+}
+
+message EmptyReq {}
+
+message EmptyResp {
+  int32 code = 1;
+  string msg = 2;
+}
+
+message LoginReq {
+  // username 用户名
+  string username = 1;
+  // password 密码
+  string password = 2;
+  // phone 手机号
+  string phone = 3;
+  // code 验证码
+  string code = 4;
+}
+
+message LoginResp {
+  int32 code = 1;
+  string msg = 2;
+    LoginData data = 3;
+}
+
+message LoginData {}

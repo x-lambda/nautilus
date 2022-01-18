@@ -1,7 +1,7 @@
 APP_ID = "local"
 
 # jaeger 配置
-JAEGER_TRACE_AGENT = "127.0.0.1:6831"
+JAEGER_TRACE_AGENT = ""
 
 # MySQL 配置
 # DB 配置，格式为 DB_${NAME}_DSN，内容参考
@@ -9,4 +9,4 @@ JAEGER_TRACE_AGENT = "127.0.0.1:6831"
 # 必须设置 parseTime 选项
 # 通过 ${NAME} 可以获取 DB 连接池
 # 时区问题参考 https://www.jianshu.com/p/3f7fc9093db4
-DB_DEFAULT_DSN = "root:123456@tcp(127.0.0.1:3306)/test?parseTime=true&loc=Local"
+DB_PENSION_DSN = "root:12345678@tcp(127.0.0.1:3306)/test?parseTime=true&loc=Local"

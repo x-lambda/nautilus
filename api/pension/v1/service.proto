@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+// 格式: ${dir};package_name
+option go_package = "pension/v1;pension_v1";
+
+import "google/api/annotations.proto";

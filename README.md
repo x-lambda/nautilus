@@ -27,6 +27,14 @@ $ go install
 3. 安装`protoc-gen-gin`
 ```shell
 $ go get -u github.com/x-lambda/protoc-gen-gin
+
+# go 1.17及以上执行下面命令
+# go install github.com/x-lambda/protoc-gen-gin@latest
+```
+
+4. 安装`protoc-gen-go-grpc`
+```shell
+# TODO
 ```
 
 ## 项目结构

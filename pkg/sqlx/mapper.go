@@ -3,8 +3,11 @@ package sqlx
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"sync"
 	"time"
+
+	"nautilus/pkg/conf"
 
 	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-sql-driver/mysql"
@@ -48,7 +51,7 @@ func Get(ctx context.Context, name string) *DB {
 	rwl.RUnlock()
 
 	v, _, _ := sfg.Do(name, func() (interface{}, error) {
-		dsn := "root:Y#*dUjC9%U%j@tcp(10.19.22.20:3306)/AAI_DEV?parseTime=true" // TODO 从conf中取
+		dsn := conf.Get(strings.ToUpper("DB_" + name + "_DSN")) // TODO 从conf中取
 		driverName := "db-mysql:" + name
 		driver := sqlmw.Driver(mysql.MySQLDriver{}, observer{name: name})
 

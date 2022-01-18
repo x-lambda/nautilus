@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"nautilus/pkg/log"
+	"nautilus/pkg/trace"
 
 	"github.com/ngrok/sqlmw"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 // observer 拦截器：观察所有sql执行情况
@@ -23,47 +25,53 @@ type observer struct {
 // ConnExecContext 执行Exec SQL
 func (o observer) ConnExecContext(ctx context.Context, conn driver.ExecerContext,
 	query string, args []driver.NamedValue) (result driver.Result, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Exec")
-	defer span.Finish()
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "Exec")
 
-	ext.Component.Set(span, "sqlx")
-	ext.DBInstance.Set(span, o.name)
-	ext.DBStatement.Set(span, query)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String(query))
 
 	s := time.Now()
 	result, err = conn.ExecContext(ctx, query, args)
 	d := time.Since(s)
 
-	log.Get(ctx).Debugf("[sqlx] name: %s exec: %s args: %v, cost: %v",
-		o.name, query, values(args), d)
+	// log.Get(ctx).Debugf("[sqlx] name: %s exec: %s args: %v, cost: %v",
+	//	o.name, query, values(args), d)
 
 	table, cmd := parseSQL(query)
 	sqlDurations.WithLabelValues(o.name, table, cmd).Observe(d.Seconds())
 
+	span.SetAttributes(trace.DBOperationKey.String(cmd))
+	span.SetAttributes(trace.DBTableKey.String(table))
+	onSpanErr(span, err)
 	return
 }
 
 // ConnQueryContext 执行Query SQL
 func (o observer) ConnQueryContext(ctx context.Context, conn driver.QueryerContext,
 	query string, args []driver.NamedValue) (rows driver.Rows, err error) {
+	// tracing
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "Query")
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Query")
-	defer span.Finish()
-
-	ext.Component.Set(span, "sqlx")
-	ext.DBInstance.Set(span, o.name)
-	ext.DBStatement.Set(span, query)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String(query))
 
 	s := time.Now()
 	rows, err = conn.QueryContext(ctx, query, args)
 	d := time.Since(s)
 
-	log.Get(ctx).Debugf("[sqlx] name: %s query: %s args: %v cost: %v",
-		o.name, query, values(args), d)
+	// log.Get(ctx).Debugf("[sqlx] name: %s query: %s args: %v cost: %v",
+	//	o.name, query, values(args), d)
 
 	table, cmd := parseSQL(query)
 	sqlDurations.WithLabelValues(o.name, table, cmd).Observe(d.Seconds())
 
+	span.SetAttributes(trace.DBOperationKey.String(cmd))
+	span.SetAttributes(trace.DBTableKey.String(table))
+	onSpanErr(span, err)
 	return
 }
 
@@ -72,35 +80,38 @@ func (o observer) ConnQueryContext(ctx context.Context, conn driver.QueryerConte
 // 参考: https://manjusaka.itscoder.com/posts/2020/01/05/simple-introdution-about-sql-prepared/
 func (o observer) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext,
 	query string) (stmt driver.Stmt, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "prepare")
-	defer span.Finish()
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "Prepare")
 
-	ext.Component.Set(span, "sqlx")
-	ext.DBInstance.Set(span, o.name)
-	ext.DBStatement.Set(span, query)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String(query))
 
 	s := time.Now()
 	stmt, err = conn.PrepareContext(ctx, query)
 	d := time.Since(s)
 
-	log.Get(ctx).Debugf("[sqlx] name: %s prepare: %s args: %v cost: %v",
-		o.name, query, nil, d)
+	// log.Get(ctx).Debugf("[sqlx] name: %s prepare: %s args: %v cost: %v",
+	//	o.name, query, nil, d)
 
-	table, _ := parseSQL(query)
+	table, cmd := parseSQL(query)
 	sqlDurations.WithLabelValues(o.name, table, "prepare").Observe(d.Seconds())
 
+	span.SetAttributes(trace.DBOperationKey.String(cmd))
+	span.SetAttributes(trace.DBTableKey.String(table))
+	onSpanErr(span, err)
 	return
 }
 
 // StmtExecContext exec stmt
 func (o observer) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext,
 	query string, args []driver.NamedValue) (result driver.Result, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "PreparedExec")
-	defer span.Finish()
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "StmtExec")
 
-	ext.Component.Set(span, "sqlx")
-	ext.DBInstance.Set(span, o.name)
-	ext.DBStatement.Set(span, query)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String(query))
 
 	s := time.Now()
 	result, err = stmt.ExecContext(ctx, args)
@@ -112,18 +123,21 @@ func (o observer) StmtExecContext(ctx context.Context, stmt driver.StmtExecConte
 	table, cmd := parseSQL(query)
 	sqlDurations.WithLabelValues(o.name, table, cmd+"-stmt").Observe(d.Seconds())
 
+	span.SetAttributes(trace.DBOperationKey.String(cmd))
+	span.SetAttributes(trace.DBTableKey.String(table))
+	onSpanErr(span, err)
 	return
 }
 
 // StmtQueryContext query stmt
 func (o observer) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext,
 	query string, args []driver.NamedValue) (rows driver.Rows, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "PreparedQuery")
-	defer span.Finish()
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "StmtQuery")
 
-	ext.Component.Set(span, "sqlx")
-	ext.DBInstance.Set(span, o.name)
-	ext.DBStatement.Set(span, query)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String(query))
 
 	s := time.Now()
 	rows, err = stmt.QueryContext(ctx, args)
@@ -135,15 +149,19 @@ func (o observer) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryCon
 	table, cmd := parseSQL(query)
 	sqlDurations.WithLabelValues(o.name, table, cmd+"-stmt").Observe(d.Seconds())
 
+	span.SetAttributes(trace.DBOperationKey.String(cmd))
+	span.SetAttributes(trace.DBTableKey.String(table))
+	onSpanErr(span, err)
 	return
 }
 
 func (o observer) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (tx driver.Tx, err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "begin")
-	defer span.Finish()
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "trans")
 
-	ext.Component.Set(span, "sqlx")
-	ext.DBInstance.Set(span, o.name)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String("begin"))
 
 	s := time.Now()
 	tx, err = conn.BeginTx(ctx, txOpts)
@@ -151,16 +169,17 @@ func (o observer) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOp
 
 	log.Get(ctx).Debugf("[sqlx] name: %s, begin, cost: %v", o.name, d)
 	sqlDurations.WithLabelValues(o.name, "", "begin").Observe(d.Seconds())
-
+	onSpanErr(span, err)
 	return
 }
 
 func (o observer) TxCommit(ctx context.Context, tx driver.Tx) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "commit")
-	defer span.Finish()
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "trans")
 
-	ext.Component.Set(span, "sqlx")
-	ext.DBInstance.Set(span, o.name)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String("commit"))
 
 	s := time.Now()
 	err = tx.Commit()
@@ -168,16 +187,17 @@ func (o observer) TxCommit(ctx context.Context, tx driver.Tx) (err error) {
 
 	log.Get(ctx).Debugf("[sqlx] name: %s, commit, cost: %v", o.name, d)
 	sqlDurations.WithLabelValues(o.name, "", "commit").Observe(d.Seconds())
-
+	onSpanErr(span, err)
 	return
 }
 
 func (o observer) TxRollback(ctx context.Context, tx driver.Tx) (err error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Rollback")
-	defer span.Finish()
+	tr := otel.Tracer("MySQL-Operation")
+	ctx, span := tr.Start(ctx, "trans")
 
-	ext.Component.Set(span, "sqldb")
-	ext.DBInstance.Set(span, o.name)
+	span.SetAttributes(trace.DBSystemValue)
+	span.SetAttributes(trace.DBNameKey.String(o.name))
+	span.SetAttributes(trace.DBStatementKey.String("rollback"))
 
 	s := time.Now()
 	err = tx.Rollback()
@@ -186,6 +206,18 @@ func (o observer) TxRollback(ctx context.Context, tx driver.Tx) (err error) {
 	log.Get(ctx).Debugf("[sqldb] name:%s, rollback, cost: %v", o.name, d)
 
 	sqlDurations.WithLabelValues(o.name, "", "rollback").Observe(d.Seconds())
-
+	onSpanErr(span, err)
 	return
+}
+
+// onSpanErr 记录span err
+func onSpanErr(span oteltrace.Span, err error) {
+	defer span.End()
+
+	if err == nil {
+		return
+	}
+
+	span.RecordError(err)
+	span.SetStatus(codes.Error, err.Error())
 }
